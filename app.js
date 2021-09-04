@@ -21,7 +21,7 @@ app.use(cookieParser());
 app.use(cors);
 
 app.use('/auth', authRouter);
-app.use('/hierarchy', hierarchyRouter);
+app.use('/hierarchy', authorization, hierarchyRouter);
 app.use('/members', authorization, membersRouter);
 
 const PORT = 5000;

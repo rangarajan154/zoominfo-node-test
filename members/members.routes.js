@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const _ = require('lodash');
 const controller = require('./members.controller');
+const checkHierarchy = require('../middleware/checkHierarchy');
 
 router.get('/', getMembers);
-router.get('/:id', getMemberById);
+router.get('/:id', checkHierarchy, getMemberById);
 
-async function getMembers(req, res, next) {
+async function getMembers(req, res) {
     try {
         console.log(`[members] getMembers page: ${req.query.page}, rpp: ${req.query.rpp}`);
         const members = await controller.getMembers();
@@ -19,7 +20,7 @@ async function getMembers(req, res, next) {
     }
 }
 
-async function getMemberById(req, res, next) {
+async function getMemberById(req, res) {
     try {
         console.log(`[members] getMemberById, id: ${req.params.id}`);
         const member = await controller.getMemberById(req.params.id);

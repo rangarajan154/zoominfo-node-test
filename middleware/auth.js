@@ -5,37 +5,35 @@ const SESSION_TOKEN_EXPIRATION_IN_MINUTES = 20;
 
 module.exports = async function (req, res, next) {
 
-  try {
-    const session = _.get(req, 'headers.session');
-    let decryptedSession = '';
-
     try {
-      decryptedSession = cryptoService.decrypt(session);
-    }
-    catch (err) {
-      throw {message: 'Session is not valid, please re-login', status: 401};
-    }
+        const session = _.get(req, 'headers.session');
+        let decryptedSession = '';
 
-    // Validate the account authentication
-    if (!decryptedSession) {
-      throw {message: 'No session provided, please re-login', status: 401};
-    }
-    const { account, timestamp } = JSON.parse(decryptedSession);
+        try {
+            decryptedSession = cryptoService.decrypt(session);
+        } catch (err) {
+            throw {message: 'Session is not valid, please re-login', status: 401};
+        }
 
-    // Validate provided session
-    if (!timestamp || moment.duration(moment().diff(timestamp)).asMinutes() > SESSION_TOKEN_EXPIRATION_IN_MINUTES) {
-      throw {message: 'Session expired, please re-login', status: 401};
-    }
-    res.locals = res.locals || {};
-    res.locals.account = account;
-    //
-    next();
-  }
-  catch (err) {
-    const errMessage = _.get(err, 'message', 'error occurred');
-    const errCode = _.get(err, 'status', 500);
+        // Validate the account authentication
+        if (!decryptedSession) {
+            throw {message: 'No session provided, please re-login', status: 401};
+        }
+        const {account, timestamp} = JSON.parse(decryptedSession);
 
-    res.status(errCode).json({message: 'error occurred during auth validation', error: errMessage});
-  }
+        // Validate provided session
+        if (!timestamp || moment.duration(moment().diff(timestamp)).asMinutes() > SESSION_TOKEN_EXPIRATION_IN_MINUTES) {
+            throw {message: 'Session expired, please re-login', status: 401};
+        }
+        res.locals = res.locals || {};
+        res.locals.account = account;
+        //
+        next();
+    } catch (err) {
+        const errMessage = _.get(err, 'message', 'error occurred');
+        const errCode = _.get(err, 'status', 500);
+
+        res.status(errCode).json({message: 'error occurred during auth validation', error: errMessage});
+    }
 
 };
